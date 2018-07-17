@@ -18,15 +18,15 @@ else
 fi
 
 repos=(
-    "https://github.com/edx/course-discovery.git"
-    "https://github.com/edx/credentials.git"
-    "https://github.com/edx/cs_comments_service.git"
-    "https://github.com/edx/ecommerce.git"
-    "https://github.com/edx/edx-e2e-tests.git"
-    "https://github.com/edx/edx-notes-api.git"
-    "https://github.com/edx/edx-platform.git"
-    "https://github.com/edx/xqueue.git"
-    "https://github.com/edx/edx-analytics-pipeline.git"
+    "-b open-release/hawthorn.master https://github.com/edx/course-discovery.git"
+    "-b open-release/hawthorn.master https://github.com/edx/credentials.git"
+    "-b open-release/hawthorn.master https://github.com/edx/cs_comments_service.git"
+    "-b open-release/hawthorn.master https://github.com/edx/ecommerce.git"
+    "-b open-release/hawthorn.master https://github.com/edx/edx-e2e-tests.git"
+    "-b open-release/hawthorn.master https://github.com/edx/edx-notes-api.git"
+    "-b open-release/hawthorn.master https://github.com/edx/edx-platform.git"
+    "-b open-release/hawthorn.master https://github.com/edx/xqueue.git"
+    "-b open-release/hawthorn.master https://github.com/edx/edx-analytics-pipeline.git"
 )
 
 private_repos=(
