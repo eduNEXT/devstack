@@ -21,10 +21,10 @@ repos=(
     "https://github.com/edx/course-discovery.git"
     "https://github.com/edx/credentials.git"
     "https://github.com/edx/cs_comments_service.git"
-    "https://github.com/edx/ecommerce.git"
+    "-b edunext/campusromero https://github.com/eduNEXT/ecommerce.git"
     "https://github.com/edx/edx-e2e-tests.git"
     "https://github.com/edx/edx-notes-api.git"
-    "https://github.com/edx/edx-platform.git"
+    "-b open-release/ginkgo.campusromero https://github.com/eduNEXT/edx-platform.git"
     "https://github.com/edx/xqueue.git"
     "https://github.com/edx/edx-analytics-pipeline.git"
 )
@@ -34,7 +34,13 @@ private_repos=(
     "https://github.com/edx/edx-themes.git"
 )
 
+themes_repos=(
+    "git@bitbucket.org:edunext/campusromero-theme.git"
+)
+
 name_pattern=".*edx/(.*).git"
+name_pattern_ednx=".*eduNEXT/(.*).git"
+name_pattern_themes=".*edunext/(.*).git"
 
 _clone ()
 {
@@ -45,7 +51,9 @@ _clone ()
     do
         # Use Bash's regex match operator to capture the name of the repo.
         # Results of the match are saved to an array called $BASH_REMATCH.
-        [[ $repo =~ $name_pattern ]]
+        echo "${repo}"
+
+        [[ $repo =~ $name_pattern || $repo =~ $name_pattern_ednx || $repo =~ $name_pattern_themes ]]
         name="${BASH_REMATCH[1]}"
 
         # If a directory exists and it is nonempty, assume the repo has been checked out.
@@ -62,9 +70,19 @@ _clone ()
     cd - &> /dev/null
 }
 
+_clone_themes (){
+    if [[ ! -d "${DEVSTACK_WORKSPACE}/openedx-themes" ]]; then
+        mkdir -p "${DEVSTACK_WORKSPACE}/openedx-themes";
+    fi
+
+    cd "${DEVSTACK_WORKSPACE}/openedx-themes"
+    _clone "$@"
+}
+
 clone ()
 {
     _clone "${repos[@]}"
+    _clone_themes "${themes_repos[@]}"
 }
 
 clone_private ()
