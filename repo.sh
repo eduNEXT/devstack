@@ -38,6 +38,15 @@ themes_repos=(
     "git@bitbucket.org:edunext/campusromero-theme.git"
 )
 
+volumes=(
+    "edxapp_studio_assets"
+    "edxapp_lms_assets"
+    "discovery_assets"
+    "mysql_data"
+    "mongo_data"
+    "elasticsearch_data"
+)
+
 name_pattern=".*edx/(.*).git"
 name_pattern_ednx=".*eduNEXT/(.*).git"
 name_pattern_themes=".*edunext/(.*).git"
@@ -79,10 +88,27 @@ _clone_themes (){
     _clone "$@"
 }
 
+_create_volumes ()
+{
+    if [[ ! -d "${DEVSTACK_WORKSPACE}/volumes" ]]; then
+        mkdir "${DEVSTACK_WORKSPACE}/volumes";
+    fi
+
+    cd "${DEVSTACK_WORKSPACE}/volumes"
+
+    for vol in "${volumes[@]}"
+    do
+        if [[ ! -d "${DEVSTACK_WORKSPACE}/volumes/${vol}" ]]; then
+            mkdir "${DEVSTACK_WORKSPACE}/volumes/${vol}";
+        fi
+    done
+}
+
 clone ()
 {
     _clone "${repos[@]}"
     _clone_themes "${themes_repos[@]}"
+    _create_volumes
 }
 
 clone_private ()
