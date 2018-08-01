@@ -18,7 +18,7 @@ else
 fi
 
 repos=(
-    "https://github.com/edx/course-discovery.git"
+    "-b open-release/ginkgo.master https://github.com/edx/course-discovery.git"
     "https://github.com/edx/credentials.git"
     "https://github.com/edx/cs_comments_service.git"
     "-b edunext/campusromero https://github.com/eduNEXT/ecommerce.git"

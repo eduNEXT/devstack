@@ -105,7 +105,7 @@ services:
     environment:
       TEST_ELASTICSEARCH_URL: "http://edx.devstack.elasticsearch:9200"
       ENABLE_DJANGO_TOOLBAR: 1
-    image: edxops/discovery:hawthorn.master
+    image: ednxops/discovery:ginkgo.master
     ports:
       - "18381:18381"
     volumes:
