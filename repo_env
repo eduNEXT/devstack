@@ -1,0 +1,4 @@
+export COMMON_GITHUB_PATH="proversity-org"
+
+export EDXAPP_GITHUB_PATH="proversity-org"
+export EDXAPP_GITHUB_BRANCH="master"

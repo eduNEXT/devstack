@@ -3,6 +3,8 @@
 set -e
 set -o pipefail
 
+. repo_env
+
 # Script for Git repos housing edX services. These repos are mounted as
 # data volumes into their corresponding Docker containers to facilitate development.
 # Repos are cloned to/removed from the directory above the one housing this file.
@@ -21,12 +23,11 @@ repos=(
     "-b open-release/ginkgo.master https://github.com/edx/course-discovery.git"
     "https://github.com/edx/credentials.git"
     "https://github.com/edx/cs_comments_service.git"
-    "-b edunext/campusromero https://github.com/eduNEXT/ecommerce.git"
     "https://github.com/edx/edx-e2e-tests.git"
     "https://github.com/edx/edx-notes-api.git"
-    "-b open-release/ginkgo.campusromero https://github.com/eduNEXT/edx-platform.git"
     "https://github.com/edx/xqueue.git"
     "https://github.com/edx/edx-analytics-pipeline.git"
+    "-b $EDXAPP_GITHUB_BRANCH https://github.com/$EDXAPP_GITHUB_PATH/edx-platform.git"
 )
 
 private_repos=(
@@ -35,7 +36,7 @@ private_repos=(
 )
 
 themes_repos=(
-    "git@bitbucket.org:edunext/campusromero-theme.git"
+    "https://github.com/$EDXAPP_GITHUB_PATH/edx-theme-microsites.git"
 )
 
 volumes=(
@@ -50,6 +51,7 @@ volumes=(
 name_pattern=".*edx/(.*).git"
 name_pattern_ednx=".*eduNEXT/(.*).git"
 name_pattern_themes=".*edunext/(.*).git"
+name_pattern_custom=".*$COMMON_GITHUB_PATH/(.*).git"
 
 _clone ()
 {
@@ -62,7 +64,7 @@ _clone ()
         # Results of the match are saved to an array called $BASH_REMATCH.
         echo "${repo}"
 
-        [[ $repo =~ $name_pattern || $repo =~ $name_pattern_ednx || $repo =~ $name_pattern_themes ]]
+        [[ $repo =~ $name_pattern || $repo =~ $name_pattern_ednx || $repo =~ $name_pattern_themes || $repo =~ $name_pattern_custom ]]
         name="${BASH_REMATCH[1]}"
 
         # If a directory exists and it is nonempty, assume the repo has been checked out.
