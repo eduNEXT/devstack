@@ -3,6 +3,9 @@
 set -e
 set -o pipefail
 
+# Use variables of file repo_defaults
+. repo_defaults
+
 # Script for Git repos housing edX services. These repos are mounted as
 # data volumes into their corresponding Docker containers to facilitate development.
 # Repos are cloned to/removed from the directory above the one housing this file.
@@ -17,33 +20,14 @@ else
     exit 1
 fi
 
-repos=(
-    "-b open-release/hawthorn.master https://github.com/edx/course-discovery.git"
-    "-b open-release/hawthorn.master https://github.com/edx/credentials.git"
-    "-b open-release/hawthorn.master https://github.com/edx/cs_comments_service.git"
-    "-b open-release/hawthorn.master https://github.com/edx/ecommerce.git"
-    "-b open-release/hawthorn.master https://github.com/edx/edx-e2e-tests.git"
-    "-b open-release/hawthorn.master https://github.com/edx/edx-notes-api.git"
-    "-b open-release/hawthorn.master https://github.com/edx/edx-platform.git"
-    "-b open-release/hawthorn.master https://github.com/edx/xqueue.git"
-    "-b open-release/hawthorn.master https://github.com/edx/edx-analytics-pipeline.git"
-)
+repos=(${LIST_OF_REPOS_TO_CLONE[@]})
 
 private_repos=(
     # Needed to run whitelabel tests.
     "https://github.com/edx/edx-themes.git"
 )
 
-volumes=(
-    "edxapp_studio_assets"
-    "edxapp_lms_assets"
-    "discovery_assets"
-    "mysql_data"
-    "mongo_data"
-    "elasticsearch_data"
-)
-
-name_pattern=".*edx/(.*).git"
+volumes=(${VOLUMES_TO_CREATE[@]})
 
 _checkout ()
 {
@@ -58,7 +42,7 @@ _checkout ()
     do
         # Use Bash's regex match operator to capture the name of the repo.
         # Results of the match are saved to an array called $BASH_REMATCH.
-        [[ $repo =~ $name_pattern ]]
+        [[ $repo =~ $NAME_PATTERN_REPOS ]]
         name="${BASH_REMATCH[1]}"
 
         # If a directory exists and it is nonempty, assume the repo has been cloned.
@@ -86,7 +70,7 @@ _clone ()
     do
         # Use Bash's regex match operator to capture the name of the repo.
         # Results of the match are saved to an array called $BASH_REMATCH.
-        [[ $repo =~ $name_pattern ]]
+        [[ $repo =~ $NAME_PATTERN_REPOS ]]
         name="${BASH_REMATCH[1]}"
 
         # If a directory exists and it is nonempty, assume the repo has been checked out.
@@ -98,12 +82,31 @@ _clone ()
             else
                 git clone $repo
             fi
-            if [ -n "${OPENEDX_RELEASE}" ]; then
-                git checkout open-release/${OPENEDX_RELEASE}
-            fi
         fi
     done
     cd - &> /dev/null
+}
+
+
+_clone_theme ()
+{
+    if [[ ! -d "${DEVSTACK_WORKSPACE}/openedx-themes" ]]; then
+        mkdir -p "${DEVSTACK_WORKSPACE}/openedx-themes";
+    fi
+
+    cd "${DEVSTACK_WORKSPACE}/openedx-themes"
+
+    if [[ $THEME_REPO != "" ]]; then
+      [[ $THEME_REPO =~ $NAME_PATTERN_THEME ]]
+      name="${BASH_REMATCH[1]}"
+
+      if [ -d "$name" -a -n "$(ls -A "$name" 2>/dev/null)" ]; then
+          printf "The [%s] theme repo is already checked out. Continuing.\n" $name
+      else
+          printf "Clone [$THEME_REPO] branch [$BRANCH_REPO_THEME]"
+          git clone $BRANCH_REPO_THEME $THEME_REPO
+      fi
+    fi
 }
 
 _create_volumes ()
@@ -126,6 +129,7 @@ clone ()
 {
     _clone "${repos[@]}"
     _create_volumes
+    _clone_theme
 }
 
 clone_private ()

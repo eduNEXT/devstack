@@ -1,0 +1,32 @@
+OPENEDX_RELEASE="hawthorn.master"
+
+# Change by the admin user of the repo
+# Example: change edx to eduNEXT if the url of repo is https://github.com/eduNEXT
+NAME_PATTERN_REPOS=".*edx/(.*).git"
+NAME_PATTERN_THEME=".*edx/(.*).git"
+
+THEME_REPO=""
+BRANCH_REPO_THEME=""
+
+# If the branch of the all repositories is not equal define -b for each repository.
+# Example: -b open-release/hawthorn.master https://github.com/edx/course-discovery.git
+LIST_OF_REPOS_TO_CLONE=(
+    "https://github.com/edx/course-discovery.git"
+    "https://github.com/edx/credentials.git"
+    "https://github.com/edx/cs_comments_service.git"
+    "https://github.com/edx/ecommerce.git"
+    "https://github.com/edx/edx-e2e-tests.git"
+    "https://github.com/edx/edx-notes-api.git"
+    "https://github.com/edx/edx-platform.git"
+    "https://github.com/edx/xqueue.git"
+    "https://github.com/edx/edx-analytics-pipeline.git"
+)
+
+VOLUMES_TO_CREATE=(
+    "edxapp_studio_assets"
+    "edxapp_lms_assets"
+    "discovery_assets"
+    "mysql_data"
+    "mongo_data"
+    "elasticsearch_data"
+)
