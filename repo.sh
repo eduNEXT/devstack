@@ -32,11 +32,11 @@ repos=(
 
 private_repos=(
     # Needed to run whitelabel tests.
-    "https://github.com/edx/edx-themes.git"
+  #  "https://github.com/edx/edx-themes.git"
 )
 
 themes_repos=(
-    "https://github.com/$EDXAPP_GITHUB_PATH/edx-theme-microsites.git"
+   # "https://github.com/$EDXAPP_GITHUB_PATH/edx-theme-microsites.git"
 )
 
 volumes=(
