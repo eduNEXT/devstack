@@ -65,24 +65,31 @@ _clone ()
 {
     # for repo in ${repos[*]}
     repos_to_clone=("$@")
+    echo "${LIST_OF_NAME_PATTERNS[@]}"
 
-    for repo in "${repos_to_clone[@]}"
+    for np in ${LIST_OF_NAME_PATTERNS[@]}
     do
-        # Use Bash's regex match operator to capture the name of the repo.
-        # Results of the match are saved to an array called $BASH_REMATCH.
-        [[ $repo =~ $NAME_PATTERN_REPOS ]]
-        name="${BASH_REMATCH[1]}"
+      name_pattern=".*$np/(.*).git"
 
-        # If a directory exists and it is nonempty, assume the repo has been checked out.
-        if [ -d "$name" -a -n "$(ls -A "$name" 2>/dev/null)" ]; then
-            printf "The [%s] repo is already checked out. Continuing.\n" $name
-        else
-            if [ "${SHALLOW_CLONE}" == "1" ]; then
-                git clone --depth=1 $repo
+      for repo in "${repos_to_clone[@]}"
+      do
+        if [[ $repo =~ $name_pattern ]]; then
+          name="${BASH_REMATCH[1]}"
+
+          if [[ -n $name ]]; then
+            # If a directory exists and it is nonempty, assume the repo has been checked out.
+            if [ -d "$name" -a -n "$(ls -A "$name" 2>/dev/null)" ]; then
+                printf "The [%s] repo is already checked out. Continuing.\n" $name
             else
-                git clone $repo
+              if [ "${SHALLOW_CLONE}" == "1" ]; then
+                  git clone --depth=1 $repo
+              else
+                  git clone $repo
+              fi
             fi
+          fi
         fi
+      done
     done
     cd - &> /dev/null
 }
@@ -97,7 +104,9 @@ _clone_theme ()
     cd "${DEVSTACK_WORKSPACE}/openedx-themes"
 
     if [[ $THEME_REPO != "" ]]; then
-      [[ $THEME_REPO =~ $NAME_PATTERN_THEME ]]
+      name_pattern=".*$NAME_PATTERN_THEME/(.*).git"
+
+      [[ $THEME_REPO =~ $name_pattern ]]
       name="${BASH_REMATCH[1]}"
 
       if [ -d "$name" -a -n "$(ls -A "$name" 2>/dev/null)" ]; then
