@@ -18,20 +18,29 @@ else
 fi
 
 repos=(
-    "https://github.com/edx/course-discovery.git"
-    "https://github.com/edx/credentials.git"
-    "https://github.com/edx/cs_comments_service.git"
-    "https://github.com/edx/ecommerce.git"
-    "https://github.com/edx/edx-e2e-tests.git"
-    "https://github.com/edx/edx-notes-api.git"
-    "https://github.com/edx/edx-platform.git"
-    "https://github.com/edx/xqueue.git"
-    "https://github.com/edx/edx-analytics-pipeline.git"
+    "-b open-release/hawthorn.master https://github.com/edx/course-discovery.git"
+    "-b open-release/hawthorn.master https://github.com/edx/credentials.git"
+    "-b open-release/hawthorn.master https://github.com/edx/cs_comments_service.git"
+    "-b open-release/hawthorn.master https://github.com/edx/ecommerce.git"
+    "-b open-release/hawthorn.master https://github.com/edx/edx-e2e-tests.git"
+    "-b open-release/hawthorn.master https://github.com/edx/edx-notes-api.git"
+    "-b open-release/hawthorn.master https://github.com/edx/edx-platform.git"
+    "-b open-release/hawthorn.master https://github.com/edx/xqueue.git"
+    "-b open-release/hawthorn.master https://github.com/edx/edx-analytics-pipeline.git"
 )
 
 private_repos=(
     # Needed to run whitelabel tests.
     "https://github.com/edx/edx-themes.git"
+)
+
+volumes=(
+    "edxapp_studio_assets"
+    "edxapp_lms_assets"
+    "discovery_assets"
+    "mysql_data"
+    "mongo_data"
+    "elasticsearch_data"
 )
 
 name_pattern=".*edx/(.*).git"
@@ -97,9 +106,26 @@ _clone ()
     cd - &> /dev/null
 }
 
+_create_volumes ()
+{
+    if [[ ! -d "${DEVSTACK_WORKSPACE}/volumes" ]]; then
+        mkdir "${DEVSTACK_WORKSPACE}/volumes";
+    fi
+
+    cd "${DEVSTACK_WORKSPACE}/volumes"
+
+    for vol in "${volumes[@]}"
+    do
+        if [[ ! -d "${DEVSTACK_WORKSPACE}/volumes/${vol}" ]]; then
+            mkdir "${DEVSTACK_WORKSPACE}/volumes/${vol}";
+        fi
+    done
+}
+
 clone ()
 {
     _clone "${repos[@]}"
+    _create_volumes
 }
 
 clone_private ()

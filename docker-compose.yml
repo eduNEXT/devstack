@@ -14,7 +14,7 @@ services:
   # Third-party services
   chrome:
     container_name: edx.devstack.chrome
-    image: edxops/chrome:${OPENEDX_RELEASE:-latest}
+    image: edxops/chrome:${OPENEDX_RELEASE:-hawthorn.master}
     shm_size: 2g
     ports:
       - "15900:5900"
@@ -30,12 +30,12 @@ services:
     #   - "9200:9200"
     #   - "9300:9300"
     volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-      - elasticsearch_data:/usr/share/elasticsearch/logs
+      - ../volumes/elasticsearch_data:/usr/share/elasticsearch/data
+      - ../volumes/elasticsearch_data:/usr/share/elasticsearch/logs
 
   firefox:
     container_name: edx.devstack.firefox
-    image: edxops/firefox:${OPENEDX_RELEASE:-latest}
+    image: edxops/firefox:${OPENEDX_RELEASE:-hawthorn.master}
     shm_size: 2g
     ports:
       - "25900:5900"
@@ -59,7 +59,7 @@ services:
     # ports:
     #  - "27017:27017"
     volumes:
-      - mongo_data:/data/db
+      - ../volumes/mongo_data:/data/db
 
   mysql:
     command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci
@@ -71,7 +71,7 @@ services:
     # ports:
     #   - "3306:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - ../volumes/mysql_data:/var/lib/mysql
 
   # edX services
   credentials:
@@ -88,7 +88,7 @@ services:
       DB_HOST: edx.devstack.mysql
       SOCIAL_AUTH_EDX_OIDC_URL_ROOT: http://edx.devstack.lms:18000/oauth2
       ENABLE_DJANGO_TOOLBAR: 1
-    image: edxops/credentials:${OPENEDX_RELEASE:-latest}
+    image: edxops/credentials:${OPENEDX_RELEASE:-hawthorn.master}
     ports:
       - "18150:18150"
 
@@ -105,11 +105,11 @@ services:
     environment:
       TEST_ELASTICSEARCH_URL: "http://edx.devstack.elasticsearch:9200"
       ENABLE_DJANGO_TOOLBAR: 1
-    image: edxops/discovery:${OPENEDX_RELEASE:-latest}
+    image: edxops/discovery:${OPENEDX_RELEASE:-hawthorn.master}
     ports:
       - "18381:18381"
     volumes:
-      - discovery_assets:/edx/var/discovery/
+      - ../volumes/discovery_assets:/edx/var/discovery/
 
   ecommerce:
     command: bash -c 'source /edx/app/ecommerce/ecommerce_env && while true; do python /edx/app/ecommerce/ecommerce/manage.py runserver 0.0.0.0:18130; sleep 2; done'
@@ -122,7 +122,7 @@ services:
     tty: true
     environment:
       ENABLE_DJANGO_TOOLBAR: 0
-    image: edxops/ecommerce:${OPENEDX_RELEASE:-latest}
+    image: edxops/ecommerce:${OPENEDX_RELEASE:-hawthorn.master}
     ports:
       - "18130:18130"
 
@@ -143,14 +143,14 @@ services:
       BOK_CHOY_CMS_PORT: 18031
       EDXAPP_TEST_MONGO_HOST: edx.devstack.mongo
       NO_PYTHON_UNINSTALL: 1
-    image: edxops/edxapp:${OPENEDX_RELEASE:-latest}
+    image: edxops/edxapp:${OPENEDX_RELEASE:-hawthorn.master}
     ports:
       - "18000:18000"
       - "19876:19876" # JS test debugging
       # - "18003:18003"
       # - "18031:18031"
     volumes:
-      - edxapp_lms_assets:/edx/var/edxapp/staticfiles/
+      - ../volumes/edxapp_lms_assets:/edx/var/edxapp/staticfiles/
 
   edx_notes_api:
     command: bash -c 'source /edx/app/edx_notes_api/edx_notes_api_env && while true; do python /edx/app/edx_notes_api/edx_notes_api/manage.py runserver 0.0.0.0:18120 --settings notesserver.settings.devstack; sleep 2; done'
@@ -159,7 +159,7 @@ services:
       - devpi
       - elasticsearch
       - mysql
-    image: edxops/notes:${OPENEDX_RELEASE:-latest}
+    image: edxops/notes:${OPENEDX_RELEASE:-hawthorn.master}
     ports:
       - "18120:18120"
     environment:
@@ -189,14 +189,14 @@ services:
       BOK_CHOY_CMS_PORT: 18131
       EDXAPP_TEST_MONGO_HOST: edx.devstack.mongo
       NO_PYTHON_UNINSTALL: 1
-    image: edxops/edxapp:${OPENEDX_RELEASE:-latest}
+    image: edxops/edxapp:${OPENEDX_RELEASE:-hawthorn.master}
     ports:
       - "18010:18010"
       - "19877:19877" # JS test debugging
       # - "18103:18103"
       # - "18131:18131"
     volumes:
-      - edxapp_studio_assets:/edx/var/edxapp/staticfiles/
+      - ../volumes/edxapp_studio_assets:/edx/var/edxapp/staticfiles/
 
   forum:
     command: bash -c 'source /edx/app/forum/ruby_env && source /edx/app/forum/devstack_forum_env && cd /edx/app/forum/cs_comments_service && bundle install && while true; do ruby app.rb -o 0.0.0.0 ; sleep 2; done'
@@ -205,23 +205,17 @@ services:
       - mongo
       - memcached
       - elasticsearch
-    image: edxops/forum:${OPENEDX_RELEASE:-latest}
+    image: edxops/forum:${OPENEDX_RELEASE:-hawthorn.master}
     ports:
       - "44567:4567"
 
   devpi:
     container_name: edx.devstack.devpi
-    image: edxops/devpi:${OPENEDX_RELEASE:-latest}
+    image: edxops/devpi:${OPENEDX_RELEASE:-hawthorn.master}
     ports:
       - "3141:3141"
     volumes:
       - devpi_data:/data
 
 volumes:
-  discovery_assets:
-  edxapp_lms_assets:
-  edxapp_studio_assets:
-  elasticsearch_data:
-  mongo_data:
-  mysql_data:
   devpi_data:
