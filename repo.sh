@@ -31,28 +31,33 @@ volumes=(${VOLUMES_TO_CREATE[@]})
 
 _checkout ()
 {
-    repos_to_checkout=("$@")
+    repos_to_clone=("$@")
 
     if [ -z "$OPENEDX_RELEASE" ]; then
         branch="master"
     else
         branch="open-release/${OPENEDX_RELEASE}"
     fi
-    for repo in "${repos_to_checkout[@]}"
-    do
-        # Use Bash's regex match operator to capture the name of the repo.
-        # Results of the match are saved to an array called $BASH_REMATCH.
-        [[ $repo =~ $NAME_PATTERN_REPOS ]]
-        name="${BASH_REMATCH[1]}"
 
-        # If a directory exists and it is nonempty, assume the repo has been cloned.
-        if [ -d "$name" -a -n "$(ls -A "$name" 2>/dev/null)" ]; then
-            cd $name
-            echo "Checking out branch $branch of $name"
-            git pull
-            git checkout "$branch"
-            cd ..
+    for np in ${LIST_OF_NAME_PATTERNS[@]}
+    do
+      name_pattern=".*$np/(.*).git"
+
+      for repo in "${repos_to_clone[@]}"
+      do
+        if [[ $repo =~ $name_pattern ]]; then
+          name="${BASH_REMATCH[1]}"
+          echo "$BASH_REMATCH"
+          # If a directory exists and it is nonempty, assume the repo has been cloned.
+          if [ -d "$name" -a -n "$(ls -A "$name" 2>/dev/null)" ]; then
+              cd $name
+              echo "Checking out branch $branch of $name"
+              git pull
+              git checkout "$branch"
+              cd ..
+          fi
         fi
+      done
     done
 }
 
@@ -65,7 +70,6 @@ _clone ()
 {
     # for repo in ${repos[*]}
     repos_to_clone=("$@")
-    echo "${LIST_OF_NAME_PATTERNS[@]}"
 
     for np in ${LIST_OF_NAME_PATTERNS[@]}
     do
