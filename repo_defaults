@@ -7,14 +7,14 @@ LIST_OF_NAME_PATTERNS=(
     "edx"
 )
 
-NAME_PATTERN_THEME="edx"
+NAME_PATTERN_THEME=""
 THEME_REPO=""
-BRANCH_REPO_THEME=""
+BRANCH_REPO_THEME="" #use -b branch_name
 
 # If the branch of the all repositories is not equal define -b for each repository.
 # Example: -b open-release/hawthorn.master https://github.com/edx/course-discovery.git
 LIST_OF_REPOS_TO_CLONE=(
-    "https://github.com/patata/course-discovery.git"
+    "https://github.com/edx/course-discovery.git"
     "https://github.com/edx/credentials.git"
     "https://github.com/edx/cs_comments_service.git"
     "https://github.com/edx/ecommerce.git"
