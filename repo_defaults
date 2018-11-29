@@ -11,6 +11,7 @@ LIST_OF_NAME_PATTERNS=(
 NAME_PATTERN_THEME="edunext"
 THEME_REPO="git@bitbucket.org:edunext/edunext-base-theme.git"
 BRANCH_REPO_THEME="-b master"
+FOLDER_REPO_THEME="edx-themes"
 
 # If the branch of the all repositories is not equal define -b for each repository.
 # Example: -b open-release/hawthorn.master https://github.com/edx/course-discovery.git
@@ -24,6 +25,10 @@ LIST_OF_REPOS_TO_CLONE=(
     "-b llpa/hawthorn+llpa https://github.com/eduNEXT/edx-platform.git"
     "https://github.com/edx/xqueue.git"
     "https://github.com/edx/edx-analytics-pipeline.git"
+)
+
+LIST_OF_REPO_NOT_CHECKOUT=(
+  "https://github.com/eduNEXT/edx-platform.git"
 )
 
 VOLUMES_TO_CREATE=(
