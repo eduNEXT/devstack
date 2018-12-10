@@ -28,6 +28,7 @@ repos=(
     "https://github.com/edx/xqueue.git"
     "https://github.com/edx/edx-analytics-pipeline.git"
     "-b $EDXAPP_GITHUB_BRANCH https://github.com/$EDXAPP_GITHUB_PATH/edx-platform.git"
+    "-b $EDXAPP_GITHUB_BRANCH https://github.com/$EDXAPP_GITHUB_PATH/ecommerce.git"
 )
 
 private_repos=(

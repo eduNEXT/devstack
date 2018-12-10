@@ -2,3 +2,6 @@ export COMMON_GITHUB_PATH="proversity-org"
 
 export EDXAPP_GITHUB_PATH="proversity-org"
 export EDXAPP_GITHUB_BRANCH="master"
+
+export ECOMMERCE_GITHUB_PATH="proversity-org"
+export ECOMMERCE_GITHUB_BRANCH="master"
