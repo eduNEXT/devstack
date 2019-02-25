@@ -75,7 +75,7 @@ _clone ()
     do
       name_pattern=".*$np/(.*).git"
 
-      for repo in "${repos_to_clone[@]}"
+      for repo in "${LIST_OF_REPOS_TO_CLONE[@]}"
       do
         if [[ $repo =~ $name_pattern ]]; then
           name="${BASH_REMATCH[1]}"

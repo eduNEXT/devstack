@@ -8,6 +8,8 @@ apps=( lms studio )
 ./load-db.sh edxapp
 ./load-db.sh edxapp_csmh
 
+./load-mongo-db.sh edxapp
+
 # Bring edxapp containers online
 for app in "${apps[@]}"; do
     docker-compose $DOCKER_COMPOSE_FILES up -d $app
