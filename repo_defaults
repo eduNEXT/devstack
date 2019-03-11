@@ -5,11 +5,13 @@ OPENEDX_RELEASE="hawthorn.master"
 LIST_OF_NAME_PATTERNS=(
     "ednx"
     "edx"
+    "eduNEXT"
 )
 
-NAME_PATTERN_THEME="edx"
+NAME_PATTERN_THEME=""
 THEME_REPO=""
 BRANCH_REPO_THEME=""
+FOLDER_REPO_THEME="edx-themes"
 
 # If the branch of the all repositories is not equal define -b for each repository.
 # Example: -b open-release/hawthorn.master https://github.com/edx/course-discovery.git
@@ -20,9 +22,12 @@ LIST_OF_REPOS_TO_CLONE=(
     "https://github.com/edx/ecommerce.git"
     "https://github.com/edx/edx-e2e-tests.git"
     "https://github.com/edx/edx-notes-api.git"
-    "https://github.com/edx/edx-platform.git"
+    "https://github.com/eduNEXT/edx-platform.git"
     "https://github.com/edx/xqueue.git"
     "https://github.com/edx/edx-analytics-pipeline.git"
+)
+
+LIST_OF_REPO_NOT_CHECKOUT=(
 )
 
 VOLUMES_TO_CREATE=(

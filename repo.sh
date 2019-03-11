@@ -31,28 +31,40 @@ volumes=(${VOLUMES_TO_CREATE[@]})
 
 _checkout ()
 {
-    repos_to_checkout=("$@")
+    repos_to_clone=("$@")
 
     if [ -z "$OPENEDX_RELEASE" ]; then
         branch="master"
     else
         branch="open-release/${OPENEDX_RELEASE}"
     fi
-    for repo in "${repos_to_checkout[@]}"
-    do
-        # Use Bash's regex match operator to capture the name of the repo.
-        # Results of the match are saved to an array called $BASH_REMATCH.
-        [[ $repo =~ $NAME_PATTERN_REPOS ]]
-        name="${BASH_REMATCH[1]}"
 
-        # If a directory exists and it is nonempty, assume the repo has been cloned.
-        if [ -d "$name" -a -n "$(ls -A "$name" 2>/dev/null)" ]; then
-            cd $name
-            echo "Checking out branch $branch of $name"
-            git pull
-            git checkout "$branch"
-            cd ..
-        fi
+    for np in ${LIST_OF_NAME_PATTERNS[@]}
+    do
+      name_pattern=".*$np/(.*).git"
+
+      for repo in "${repos_to_clone[@]}"
+      do
+        for repo_not_checkout in "${LIST_OF_REPO_NOT_CHECKOUT[@]}"
+        do
+          rnc=".*$repo_not_checkout.*"
+
+          if [[ ! $repo =~ $rnc ]]; then
+            if [[ $repo =~ $name_pattern ]]; then
+              name="${BASH_REMATCH[1]}"
+              echo "$BASH_REMATCH"
+              # If a directory exists and it is nonempty, assume the repo has been cloned.
+              if [ -d "$name" -a -n "$(ls -A "$name" 2>/dev/null)" ]; then
+                  cd $name
+                  echo "Checking out branch $branch of $name"
+                  git pull
+                  git checkout "$branch"
+                  cd ..
+              fi
+            fi
+          fi
+        done
+      done
     done
 }
 
@@ -65,13 +77,12 @@ _clone ()
 {
     # for repo in ${repos[*]}
     repos_to_clone=("$@")
-    echo "${LIST_OF_NAME_PATTERNS[@]}"
 
     for np in ${LIST_OF_NAME_PATTERNS[@]}
     do
       name_pattern=".*$np/(.*).git"
 
-      for repo in "${repos_to_clone[@]}"
+      for repo in "${LIST_OF_REPOS_TO_CLONE[@]}"
       do
         if [[ $repo =~ $name_pattern ]]; then
           name="${BASH_REMATCH[1]}"
@@ -109,11 +120,15 @@ _clone_theme ()
       [[ $THEME_REPO =~ $name_pattern ]]
       name="${BASH_REMATCH[1]}"
 
+      if [[ $FOLDER_REPO_THEME != "" ]]; then
+        name=$FOLDER_REPO_THEME
+      fi
+
       if [ -d "$name" -a -n "$(ls -A "$name" 2>/dev/null)" ]; then
           printf "The [%s] theme repo is already checked out. Continuing.\n" $name
       else
           printf "Clone [$THEME_REPO] branch [$BRANCH_REPO_THEME]"
-          git clone $BRANCH_REPO_THEME $THEME_REPO
+          git clone $BRANCH_REPO_THEME $THEME_REPO $FOLDER_REPO_THEME
       fi
     fi
 }
