@@ -131,7 +131,7 @@ services:
     tty: true
     environment:
       ENABLE_DJANGO_TOOLBAR: 1
-    image: edxops/ecommerce:${OPENEDX_RELEASE:-latest}
+    image: ednxops/ecommerce:cabinetoffice.ironwood
     ports:
       - "18130:18130"
 
@@ -153,7 +153,7 @@ services:
       BOK_CHOY_CMS_PORT: 18031
       EDXAPP_TEST_MONGO_HOST: edx.devstack.mongo
       NO_PYTHON_UNINSTALL: 1
-    image: edxops/edxapp:${OPENEDX_RELEASE:-latest}
+    image: ednxops/edxapp:cabinetoffice.ironwood
     ports:
       - "18000:18000"
       - "19876:19876" # JS test debugging
@@ -201,7 +201,7 @@ services:
       BOK_CHOY_CMS_PORT: 18131
       EDXAPP_TEST_MONGO_HOST: edx.devstack.mongo
       NO_PYTHON_UNINSTALL: 1
-    image: edxops/edxapp:${OPENEDX_RELEASE:-latest}
+    image: ednxops/edxapp:cabinetoffice.ironwood
     ports:
       - "18010:18010"
       - "19877:19877" # JS test debugging
