@@ -23,10 +23,21 @@ repos=(
     "https://github.com/edx/cs_comments_service.git"
     "https://github.com/edx/ecommerce.git"
     "https://github.com/edx/edx-e2e-tests.git"
-    "https://github.com/edx/edx-platform.git"
+    "https://github.com/proversity-org/edx-platform.git"
     "https://github.com/edx/xqueue.git"
     "https://github.com/edx/edx-analytics-pipeline.git"
 )
+
+VOLUMES_TO_CREATE=(
+    "edxapp_studio_assets"
+    "edxapp_lms_assets"
+    "discovery_assets"
+    "mysql_data"
+    "mongo_data"
+    "elasticsearch_data"
+)
+
+volumes=(${VOLUMES_TO_CREATE[@]})
 
 private_repos=(
     # Needed to run whitelabel tests.
@@ -44,7 +55,7 @@ _clone ()
     do
         # Use Bash's regex match operator to capture the name of the repo.
         # Results of the match are saved to an array called $BASH_REMATCH.
-        [[ $repo =~ $name_pattern ]]
+        # [[ $repo =~ $name_pattern ]]
         name="${BASH_REMATCH[1]}"
 
         if [ -d "$name" ]; then
@@ -62,7 +73,24 @@ _clone ()
 
 clone ()
 {
-    _clone "${repos[@]}"
+    # _clone "${repos[@]}"
+    _create_volumes
+}
+
+_create_volumes ()
+{
+    if [[ ! -d "${DEVSTACK_WORKSPACE}/volumes" ]]; then
+        mkdir "${DEVSTACK_WORKSPACE}/volumes";
+    fi
+
+    cd "${DEVSTACK_WORKSPACE}/volumes"
+
+    for vol in "${volumes[@]}"
+    do
+        if [[ ! -d "${DEVSTACK_WORKSPACE}/volumes/${vol}" ]]; then
+            mkdir "${DEVSTACK_WORKSPACE}/volumes/${vol}";
+        fi
+    done
 }
 
 clone_private ()

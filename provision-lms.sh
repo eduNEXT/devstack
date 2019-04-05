@@ -14,9 +14,11 @@ for app in "${apps[@]}"; do
 done
 
 docker-compose exec lms bash -c 'source /edx/app/edxapp/edxapp_env && cd /edx/app/edxapp/edx-platform && NO_PYTHON_UNINSTALL=1 paver install_prereqs'
+docker-compose exec studio bash -c 'source /edx/app/edxapp/edxapp_env && cd /edx/app/edxapp/edx-platform && NO_PYTHON_UNINSTALL=1 paver install_prereqs'
 
 #Installing prereqs crashes the process
 docker-compose restart lms
+docker-compose restart studio
 
 # Run edxapp migrations first since they are needed for the service users and OAuth clients
 docker-compose exec lms bash -c 'source /edx/app/edxapp/edxapp_env && cd /edx/app/edxapp/edx-platform && paver update_db --settings devstack_docker'
@@ -40,4 +42,4 @@ for app in "${apps[@]}"; do
 done
 
 # Provision a retirement service account user
-./provision-retirement-user.sh retirement retirement_service_worker
+# ./provision-retirement-user.sh retirement retirement_service_worker
