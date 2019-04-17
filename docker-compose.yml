@@ -32,8 +32,8 @@ services:
     #   - "9200:9200"
     #   - "9300:9300"
     volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-      - elasticsearch_data:/usr/share/elasticsearch/logs
+      - ../volumes/elasticsearch_data:/usr/share/elasticsearch/data
+      - ../volumes/elasticsearch_data:/usr/share/elasticsearch/logs
 
   firefox:
     container_name: edx.devstack.firefox
@@ -64,7 +64,7 @@ services:
     # ports:
     #  - "27017:27017"
     volumes:
-      - mongo_data:/data/db
+      - ../volumes/mongo_data:/data/db
 
   mysql:
     command: mysqld --character-set-server=utf8 --collation-server=utf8_general_ci
@@ -77,7 +77,7 @@ services:
     # ports:
     #   - "3306:3306"
     volumes:
-      - mysql_data:/var/lib/mysql
+      - ../volumes/mysql_data:/var/lib/mysql
 
   # edX services
   credentials:
@@ -117,7 +117,7 @@ services:
     ports:
       - "18381:18381"
     volumes:
-      - discovery_assets:/edx/var/discovery/
+      - ../volumes/discovery_assets:/edx/var/discovery/
 
   ecommerce:
     command: bash -c 'source /edx/app/ecommerce/ecommerce_env && while true; do python /edx/app/ecommerce/ecommerce/manage.py runserver 0.0.0.0:18130; sleep 2; done'
@@ -160,7 +160,7 @@ services:
       # - "18003:18003"
       # - "18031:18031"
     volumes:
-      - edxapp_lms_assets:/edx/var/edxapp/staticfiles/
+      - ../volumes/edxapp_lms_assets:/edx/var/edxapp/staticfiles/
 
   edx_notes_api:
     command: bash -c 'source /edx/app/edx_notes_api/edx_notes_api_env && while true; do python /edx/app/edx_notes_api/edx_notes_api/manage.py runserver 0.0.0.0:18120 --settings notesserver.settings.devstack; sleep 2; done'
@@ -208,7 +208,7 @@ services:
       # - "18103:18103"
       # - "18131:18131"
     volumes:
-      - edxapp_studio_assets:/edx/var/edxapp/staticfiles/
+      - ../volumes/edxapp_studio_assets:/edx/var/edxapp/staticfiles/
 
   forum:
     command: bash -c 'source /edx/app/forum/ruby_env && source /edx/app/forum/devstack_forum_env && cd /edx/app/forum/cs_comments_service && bundle install && while true; do ruby app.rb -o 0.0.0.0 ; sleep 2; done'
