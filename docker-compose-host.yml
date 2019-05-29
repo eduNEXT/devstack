@@ -16,6 +16,7 @@ services:
       - ${DEVSTACK_WORKSPACE}/ecommerce:/edx/app/ecommerce/ecommerce:cached
       - ecommerce_node_modules:/edx/app/ecommerce/ecommerce/node_modules
       - ${DEVSTACK_WORKSPACE}/src:/edx/src:cached
+      - ${DEVSTACK_WORKSPACE}/openedx-themes:/edx/app/openedx-themes:cached
   lms:
     volumes:
       - ${DEVSTACK_WORKSPACE}/edx-platform:/edx/app/edxapp/edx-platform:cached
