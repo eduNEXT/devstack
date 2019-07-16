@@ -1,0 +1,40 @@
+OPENEDX_RELEASE="ironwood.master"
+
+# Change by the admin user of the repo
+# Example: change edx to eduNEXT if the url of repo is https://github.com/eduNEXT
+LIST_OF_NAME_PATTERNS=(
+    "edx"
+    "eduNEXT"
+    "proversity-org"
+)
+
+NAME_PATTERN_THEME="proversity-org"
+THEME_REPO="git@github.com:proversity-org/proversity-openedx-themes.git"
+BRANCH_REPO_THEME="-b ama/teachfirst-ironwood"
+FOLDER_REPO_THEME="edx-themes"
+
+# If the branch of the all repositories is not equal define -b for each repository.
+# Example: -b open-release/hawthorn.master https://github.com/edx/course-discovery.git
+LIST_OF_REPOS_TO_CLONE=(
+    "https://github.com/edx/course-discovery.git"
+    "https://github.com/edx/credentials.git"
+    "https://github.com/edx/cs_comments_service.git"
+    "https://github.com/edx/ecommerce.git"
+    "https://github.com/edx/edx-e2e-tests.git"
+    "https://github.com/edx/edx-notes-api.git"
+    "https://github.com/edx/edx-platform.git"
+    "https://github.com/edx/xqueue.git"
+    "https://github.com/edx/edx-analytics-pipeline.git"
+)
+
+LIST_OF_REPO_NOT_CHECKOUT=(
+)
+
+VOLUMES_TO_CREATE=(
+    "edxapp_studio_assets"
+    "edxapp_lms_assets"
+    "discovery_assets"
+    "mysql_data"
+    "mongo_data"
+    "elasticsearch_data"
+)

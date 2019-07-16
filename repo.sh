@@ -3,6 +3,9 @@
 set -e
 set -o pipefail
 
+# Use variables of file repo_defaults
+. repo_defaults
+
 # Script for Git repos housing edX services. These repos are mounted as
 # data volumes into their corresponding Docker containers to facilitate development.
 # Repos are cloned to/removed from the directory above the one housing this file.
@@ -17,50 +20,58 @@ else
     exit 1
 fi
 
-if [ -n "${OPENEDX_RELEASE}" ]; then
-    OPENEDX_GIT_BRANCH=open-release/${OPENEDX_RELEASE}
-else
-    OPENEDX_GIT_BRANCH=master
-fi
-
-repos=(
-    "https://github.com/edx/course-discovery.git"
-    "https://github.com/edx/credentials.git"
-    "https://github.com/edx/cs_comments_service.git"
-    "https://github.com/edx/ecommerce.git"
-    "https://github.com/edx/edx-e2e-tests.git"
-    "https://github.com/edx/edx-notes-api.git"
-    "https://github.com/edx/edx-platform.git"
-    "https://github.com/edx/xqueue.git"
-    "https://github.com/edx/edx-analytics-pipeline.git"
-    "https://github.com/edx/gradebook.git"
-)
+repos=(${LIST_OF_REPOS_TO_CLONE[@]})
 
 private_repos=(
     # Needed to run whitelabel tests.
     "https://github.com/edx/edx-themes.git"
 )
 
-name_pattern=".*/(.*).git"
+volumes=(${VOLUMES_TO_CREATE[@]})
 
 _checkout ()
 {
-    repos_to_checkout=("$@")
+    repos_to_clone=("$@")
 
-    for repo in "${repos_to_checkout[@]}"
+    if [ -z "$OPENEDX_RELEASE" ]; then
+        branch="master"
+    else
+        branch="open-release/${OPENEDX_RELEASE}"
+    fi
+
+    for np in ${LIST_OF_NAME_PATTERNS[@]}
     do
-        # Use Bash's regex match operator to capture the name of the repo.
-        # Results of the match are saved to an array called $BASH_REMATCH.
-        [[ $repo =~ $name_pattern ]]
-        name="${BASH_REMATCH[1]}"
+      name_pattern=".*$np/(.*).git"
 
-        # If a directory exists and it is nonempty, assume the repo has been cloned.
-        if [ -d "$name" -a -n "$(ls -A "$name" 2>/dev/null)" ]; then
-            echo "Checking out branch ${OPENEDX_GIT_BRANCH} of $name"
-            cd $name
-            _checkout_and_update_branch
-            cd ..
+      for repo in "${repos_to_clone[@]}"
+      do
+        clone=1
+
+        for repo_not_checkout in "${LIST_OF_REPO_NOT_CHECKOUT[@]}"
+        do
+          rnc=".*$repo_not_checkout.*"
+
+          if [[ $repo =~ $rnc ]]; then
+            clone=0
+            break
+          fi
+        done
+
+        if [[ $clone == 1 ]]; then
+          if [[ $repo =~ $name_pattern ]]; then
+            name="${BASH_REMATCH[1]}"
+            echo "$BASH_REMATCH"
+            # If a directory exists and it is nonempty, assume the repo has been cloned.
+            if [ -d "$name" -a -n "$(ls -A "$name" 2>/dev/null)" ]; then
+                cd $name
+                echo "Checking out branch $branch of $name"
+                git pull
+                git checkout "$branch"
+                cd ..
+            fi
+          fi
         fi
+      done
     done
 }
 
@@ -73,47 +84,83 @@ _clone ()
 {
     # for repo in ${repos[*]}
     repos_to_clone=("$@")
-    for repo in "${repos_to_clone[@]}"
-    do
-        # Use Bash's regex match operator to capture the name of the repo.
-        # Results of the match are saved to an array called $BASH_REMATCH.
-        [[ $repo =~ $name_pattern ]]
-        name="${BASH_REMATCH[1]}"
 
-        # If a directory exists and it is nonempty, assume the repo has been checked out
-        # and only make sure it's on the required branch
-        if [ -d "$name" -a -n "$(ls -A "$name" 2>/dev/null)" ]; then
-            printf "The [%s] repo is already checked out. Checking for updates.\n" $name
-            cd ${DEVSTACK_WORKSPACE}/${name}
-            _checkout_and_update_branch
-            cd ..
-        else
-            if [ "${SHALLOW_CLONE}" == "1" ]; then
-                git clone --single-branch -b ${OPENEDX_GIT_BRANCH} -c core.symlinks=true --depth=1 ${repo}
+    for np in ${LIST_OF_NAME_PATTERNS[@]}
+    do
+      name_pattern=".*$np/(.*).git"
+
+      for repo in "${LIST_OF_REPOS_TO_CLONE[@]}"
+      do
+        if [[ $repo =~ $name_pattern ]]; then
+          name="${BASH_REMATCH[1]}"
+
+          if [[ -n $name ]]; then
+            # If a directory exists and it is nonempty, assume the repo has been checked out.
+            if [ -d "$name" -a -n "$(ls -A "$name" 2>/dev/null)" ]; then
+                printf "The [%s] repo is already checked out. Continuing.\n" $name
             else
-                git clone --single-branch -b ${OPENEDX_GIT_BRANCH} -c core.symlinks=true ${repo}
+              if [ "${SHALLOW_CLONE}" == "1" ]; then
+                  git clone --depth=1 $repo
+              else
+                  git clone $repo
+              fi
             fi
+          fi
         fi
+      done
     done
     cd - &> /dev/null
 }
 
-_checkout_and_update_branch ()
+
+_clone_theme ()
 {
-    GIT_SYMBOLIC_REF="$(git symbolic-ref HEAD 2>/dev/null)"
-    BRANCH_NAME=${GIT_SYMBOLIC_REF##refs/heads/}
-    if [ "${BRANCH_NAME}" == "${OPENEDX_GIT_BRANCH}" ]; then
-        git pull origin ${OPENEDX_GIT_BRANCH}
-    else
-        git fetch origin ${OPENEDX_GIT_BRANCH}:${OPENEDX_GIT_BRANCH}
-        git checkout ${OPENEDX_GIT_BRANCH}
+    if [[ ! -d "${DEVSTACK_WORKSPACE}/openedx-themes" ]]; then
+        mkdir -p "${DEVSTACK_WORKSPACE}/openedx-themes";
     fi
-    find . -name '*.pyc' -not -path './.git/*' -delete 
+
+    cd "${DEVSTACK_WORKSPACE}/openedx-themes"
+
+    if [[ $THEME_REPO != "" ]]; then
+      name_pattern=".*$NAME_PATTERN_THEME/(.*).git"
+
+      [[ $THEME_REPO =~ $name_pattern ]]
+      name="${BASH_REMATCH[1]}"
+
+      if [[ $FOLDER_REPO_THEME != "" ]]; then
+        name=$FOLDER_REPO_THEME
+      fi
+
+      if [ -d "$name" -a -n "$(ls -A "$name" 2>/dev/null)" ]; then
+          printf "The [%s] theme repo is already checked out. Continuing.\n" $name
+      else
+          printf "Clone [$THEME_REPO] branch [$BRANCH_REPO_THEME]"
+          git clone $BRANCH_REPO_THEME $THEME_REPO $FOLDER_REPO_THEME
+      fi
+    fi
+}
+
+_create_volumes ()
+{
+    if [[ ! -d "${DEVSTACK_WORKSPACE}/volumes" ]]; then
+        mkdir "${DEVSTACK_WORKSPACE}/volumes";
+    fi
+
+    cd "${DEVSTACK_WORKSPACE}/volumes"
+
+    for vol in "${volumes[@]}"
+    do
+        if [[ ! -d "${DEVSTACK_WORKSPACE}/volumes/${vol}" ]]; then
+            mkdir "${DEVSTACK_WORKSPACE}/volumes/${vol}";
+        fi
+    done
 }
 
 clone ()
 {
     _clone "${repos[@]}"
+    _create_volumes
+    _clone_theme
 }
 
 clone_private ()
