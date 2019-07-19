@@ -3,7 +3,8 @@
 set -e
 set -o pipefail
 
-. repo_env
+# Use variables of file repo_defaults
+. repo_defaults
 
 # Script for Git repos housing edX services. These repos are mounted as
 # data volumes into their corresponding Docker containers to facilitate development.
@@ -19,76 +20,124 @@ else
     exit 1
 fi
 
-repos=(
-    "-b open-release/ginkgo.master https://github.com/edx/course-discovery.git"
-    "https://github.com/edx/credentials.git"
-    "https://github.com/edx/cs_comments_service.git"
-    "https://github.com/edx/edx-e2e-tests.git"
-    "https://github.com/edx/edx-notes-api.git"
-    "https://github.com/edx/xqueue.git"
-    "https://github.com/edx/edx-analytics-pipeline.git"
-    "-b $EDXAPP_GITHUB_BRANCH https://github.com/$EDXAPP_GITHUB_PATH/edx-platform.git"
-    "-b $EDXAPP_GITHUB_BRANCH https://github.com/$EDXAPP_GITHUB_PATH/ecommerce.git"
-)
+repos=(${LIST_OF_REPOS_TO_CLONE[@]})
 
 private_repos=(
     # Needed to run whitelabel tests.
-  #  "https://github.com/edx/edx-themes.git"
+    "https://github.com/edx/edx-themes.git"
 )
 
-themes_repos=(
-   # "https://github.com/$EDXAPP_GITHUB_PATH/edx-theme-microsites.git"
-)
+volumes=(${VOLUMES_TO_CREATE[@]})
 
-volumes=(
-    "edxapp_studio_assets"
-    "edxapp_lms_assets"
-    "discovery_assets"
-    "mysql_data"
-    "mongo_data"
-    "elasticsearch_data"
-)
+_checkout ()
+{
+    repos_to_clone=("$@")
 
-name_pattern=".*edx/(.*).git"
-name_pattern_ednx=".*eduNEXT/(.*).git"
-name_pattern_themes=".*edunext/(.*).git"
-name_pattern_custom=".*$COMMON_GITHUB_PATH/(.*).git"
+    if [ -z "$OPENEDX_RELEASE" ]; then
+        branch="master"
+    else
+        branch="open-release/${OPENEDX_RELEASE}"
+    fi
+
+    for np in ${LIST_OF_NAME_PATTERNS[@]}
+    do
+      name_pattern=".*$np/(.*).git"
+
+      for repo in "${repos_to_clone[@]}"
+      do
+        clone=1
+
+        for repo_not_checkout in "${LIST_OF_REPO_NOT_CHECKOUT[@]}"
+        do
+          rnc=".*$repo_not_checkout.*"
+
+          if [[ $repo =~ $rnc ]]; then
+            clone=0
+            break
+          fi
+        done
+
+        if [[ $clone == 1 ]]; then
+          if [[ $repo =~ $name_pattern ]]; then
+            name="${BASH_REMATCH[1]}"
+            echo "$BASH_REMATCH"
+            # If a directory exists and it is nonempty, assume the repo has been cloned.
+            if [ -d "$name" -a -n "$(ls -A "$name" 2>/dev/null)" ]; then
+                cd $name
+                echo "Checking out branch $branch of $name"
+                git pull
+                git checkout "$branch"
+                cd ..
+            fi
+          fi
+        fi
+      done
+    done
+}
+
+checkout ()
+{
+    _checkout "${repos[@]}"
+}
 
 _clone ()
 {
     # for repo in ${repos[*]}
     repos_to_clone=("$@")
 
-    for repo in "${repos_to_clone[@]}"
+    for np in ${LIST_OF_NAME_PATTERNS[@]}
     do
-        # Use Bash's regex match operator to capture the name of the repo.
-        # Results of the match are saved to an array called $BASH_REMATCH.
-        echo "${repo}"
+      name_pattern=".*$np/(.*).git"
 
-        [[ $repo =~ $name_pattern || $repo =~ $name_pattern_ednx || $repo =~ $name_pattern_themes || $repo =~ $name_pattern_custom ]]
-        name="${BASH_REMATCH[1]}"
+      for repo in "${LIST_OF_REPOS_TO_CLONE[@]}"
+      do
+        if [[ $repo =~ $name_pattern ]]; then
+          name="${BASH_REMATCH[1]}"
 
-        # If a directory exists and it is nonempty, assume the repo has been checked out.
-        if [ -d "$name" -a -n "$(ls -A "$name" 2>/dev/null)" ]; then
-            printf "The [%s] repo is already checked out. Continuing.\n" $name
-        else
-            if [ "${SHALLOW_CLONE}" == "1" ]; then
-                git clone --depth=1 $repo
+          if [[ -n $name ]]; then
+            # If a directory exists and it is nonempty, assume the repo has been checked out.
+            if [ -d "$name" -a -n "$(ls -A "$name" 2>/dev/null)" ]; then
+                printf "The [%s] repo is already checked out. Continuing.\n" $name
             else
-                git clone $repo
+              if [ "${SHALLOW_CLONE}" == "1" ]; then
+                  git clone --depth=1 $repo
+              else
+                  git clone $repo
+              fi
             fi
+          fi
         fi
+      done
     done
     cd - &> /dev/null
 }
 
-_clone_themes (){
+
+_clone_theme ()
+{
     if [[ ! -d "${DEVSTACK_WORKSPACE}/openedx-themes" ]]; then
         mkdir -p "${DEVSTACK_WORKSPACE}/openedx-themes";
     fi
 
     cd "${DEVSTACK_WORKSPACE}/openedx-themes"
-    _clone "$@"
+
+    if [[ $THEME_REPO != "" ]]; then
+      name_pattern=".*$NAME_PATTERN_THEME/(.*).git"
+
+      [[ $THEME_REPO =~ $name_pattern ]]
+      name="${BASH_REMATCH[1]}"
+
+      if [[ $FOLDER_REPO_THEME != "" ]]; then
+        name=$FOLDER_REPO_THEME
+      fi
+
+      if [ -d "$name" -a -n "$(ls -A "$name" 2>/dev/null)" ]; then
+          printf "The [%s] theme repo is already checked out. Continuing.\n" $name
+      else
+          printf "Clone [$THEME_REPO] branch [$BRANCH_REPO_THEME]"
+          git clone $BRANCH_REPO_THEME $THEME_REPO $FOLDER_REPO_THEME
+      fi
+    fi
 }
 
 _create_volumes ()
@@ -110,8 +159,8 @@ _create_volumes ()
 clone ()
 {
     _clone "${repos[@]}"
-    _clone_themes "${themes_repos[@]}"
     _create_volumes
+    _clone_theme
 }
 
 clone_private ()
@@ -154,7 +203,9 @@ status ()
     cd - &> /dev/null
 }
 
-if [ "$1" == "clone" ]; then
+if [ "$1" == "checkout" ]; then
+    checkout
+elif [ "$1" == "clone" ]; then
     clone
 elif [ "$1" == "whitelabel" ]; then
     clone_private
