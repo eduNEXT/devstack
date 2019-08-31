@@ -5,7 +5,7 @@ set -x
 apps=( lms studio )
 
 # Load database dumps for the largest databases to save time
-# ./load-db.sh edxapp
+./load-db.sh edxapp
 # ./load-db.sh edxapp_csmh
 
 # Bring edxapp containers online
@@ -13,8 +13,8 @@ for app in "${apps[@]}"; do
     docker-compose $DOCKER_COMPOSE_FILES up -d $app
 done
 
-docker exec -t edx.devstack.lms bash -c 'rm -r /edx/app/demo/edx-demo-course'
-docker exec -t edx.devstack.lms bash -c 'source /edx/app/edxapp/edxapp_env && cd /edx/app/edxapp/edx-platform/ && pip uninstall oauth_provider -y'
+#docker exec -t edx.devstack.lms bash -c 'rm -r /edx/app/demo/edx-demo-course'
+#docker exec -t edx.devstack.lms bash -c 'source /edx/app/edxapp/edxapp_env && cd /edx/app/edxapp/edx-platform/ && pip uninstall oauth_provider -y'
 docker exec -t edx.devstack.lms bash -c 'source /edx/app/edxapp/edxapp_env && cd /edx/app/edxapp/edx-platform/ && python manage.py cms migrate'
 docker exec -t edx.devstack.lms bash -c 'source /edx/app/edxapp/edxapp_env && cd /edx/app/edxapp/edx-platform/ && python manage.py lms migrate'
 
@@ -33,15 +33,15 @@ docker-compose exec lms bash -c 'source /edx/app/edxapp/edxapp_env && python /ed
 docker-compose exec lms bash -c 'source /edx/app/edxapp/edxapp_env && python /edx/app/edxapp/edx-platform/manage.py lms --settings=devstack_docker configure_commerce'
 
 # Create demo course and users
-docker-compose exec lms bash -c '/edx/app/edx_ansible/venvs/edx_ansible/bin/ansible-playbook /edx/app/edx_ansible/edx_ansible/playbooks/edx-east/demo.yml -v -c local -i "127.0.0.1," --extra-vars="COMMON_EDXAPP_SETTINGS=devstack_docker"'
+# docker-compose exec lms bash -c '/edx/app/edx_ansible/venvs/edx_ansible/bin/ansible-playbook /edx/app/edx_ansible/edx_ansible/playbooks/edx-east/demo.yml -v -c local -i "127.0.0.1," --extra-vars="COMMON_EDXAPP_SETTINGS=devstack_docker"'
 
 # Fix missing vendor file by clearing the cache
 docker-compose exec lms bash -c 'rm /edx/app/edxapp/edx-platform/.prereqs_cache/Node_prereqs.sha1'
 
 # Create static assets for both LMS and Studio
-# for app in "${apps[@]}"; do
-#     docker-compose exec $app bash -c 'source /edx/app/edxapp/edxapp_env && cd /edx/app/edxapp/edx-platform && paver update_assets --settings devstack_docker'
-# done
+for app in "${apps[@]}"; do
+    docker-compose exec $app bash -c 'source /edx/app/edxapp/edxapp_env && cd /edx/app/edxapp/edx-platform && paver update_assets --settings devstack_docker'
+done
 
 # Provision a retirement service account user
 ./provision-retirement-user.sh retirement retirement_service_worker

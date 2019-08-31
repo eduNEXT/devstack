@@ -10,26 +10,27 @@ LIST_OF_NAME_PATTERNS=(
 
 NAME_PATTERN_THEME="proversity-org"
 THEME_REPO="git@github.com:proversity-org/proversity-openedx-themes.git"
-BRANCH_REPO_THEME="-b pols-comprehensive-theme"
+BRANCH_REPO_THEME="-b proversity/staging"
 FOLDER_REPO_THEME="edx-themes"
 
 # If the branch of the all repositories is not equal define -b for each repository.
 # Example: -b open-release/hawthorn.master https://github.com/edx/course-discovery.git
 LIST_OF_REPOS_TO_CLONE=(
-    "-b open-release/ginkgo.master https://github.com/edx/course-discovery.git"
+    "-b proversity/staging https://github.com/proversity-org/course-discovery.git"
     "https://github.com/edx/credentials.git"
     "https://github.com/edx/cs_comments_service.git"
     "https://github.com/edx/edx-e2e-tests.git"
     "https://github.com/edx/edx-notes-api.git"
     "https://github.com/edx/xqueue.git"
     "https://github.com/edx/edx-analytics-pipeline.git"
-    "-b ama/proversity_devstack https://github.com/eduNEXT/edx-platform.git"
-    "https://github.com/edx/ecommerce.git"
+    "-b proversity/staging https://github.com/proversity-org/edx-platform.git"
+    "-b proversity/devstack https://github.com/proversity-org/ecommerce.git"
 )
 
 LIST_OF_REPO_NOT_CHECKOUT=(
     "https://github.com/proversity-org/edx-platform.git"
-    "https://github.com/edx/course-discovery.git"
+    "https://github.com/proversity-org/ecommerce.git"
+    "https://github.com/proversity-org/course-discovery.git"
 )
 
 VOLUMES_TO_CREATE=(
