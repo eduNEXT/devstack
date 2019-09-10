@@ -23,6 +23,7 @@ services:
       - edxapp_node_modules:/edx/app/edxapp/edx-platform/node_modules
       - edxapp_uploads:/edx/var/edxapp/uploads
       - ${DEVSTACK_WORKSPACE}/src:/edx/src:cached
+      - ${DEVSTACK_WORKSPACE}/openedx-themes:/edx/var/edx-themes:cached
   edx_notes_api:
     volumes:
       - ${DEVSTACK_WORKSPACE}/edx-notes-api:/edx/app/edx_notes_api/edx_notes_api:cached
@@ -34,6 +35,7 @@ services:
       - edxapp_node_modules:/edx/app/edxapp/edx-platform/node_modules
       - edxapp_uploads:/edx/var/edxapp/uploads
       - ${DEVSTACK_WORKSPACE}/src:/edx/src:cached
+      - ${DEVSTACK_WORKSPACE}/openedx-themes:/edx/var/edx-themes:cached
   forum:
     volumes:
       - ${DEVSTACK_WORKSPACE}/cs_comments_service:/edx/app/forum/cs_comments_service:cached
