@@ -105,6 +105,35 @@ _clone ()
     cd - &> /dev/null
 }
 
+_clone_plugin ()
+{
+    if [[ ! -d "${DEVSTACK_WORKSPACE}/src" ]]; then
+      mkdir -p "${DEVSTACK_WORKSPACE}/src";
+    fi
+
+    u="$USER"
+    sudo chown $u:$u $DEVSTACK_WORKSPACE/src
+    cd "${DEVSTACK_WORKSPACE}/src"
+
+    if [[ $PLUGIN_REPO != "" ]]; then
+      name_pattern=".*$NAME_PATTERN_PLUGIN/(.*).git"
+
+      [[ $PLUGIN_REPO =~ $name_pattern ]]
+      name="${BASH_REMATCH[1]}"
+
+      if [[ $FOLDER_REPO_PLUGIN != "" ]]; then
+        name=$FOLDER_REPO_PLUGIN
+      fi
+
+      if [ -d "$name" -a -n "$(ls -A "$name" 2>/dev/null)" ]; then
+        printf "The [%s] plugin repo is already checked out. Continuing.\n" $name
+      else
+        printf "Clone [$PLUGIN_REPO] branch [$BRANCH_REPO_PLUGIN] \n"
+        git clone $BRANCH_REPO_PLUGIN $PLUGIN_REPO $FOLDER_REPO_PLUGIN
+      fi
+  fi
+}
+
 
 _clone_theme ()
 {
@@ -154,6 +183,7 @@ clone ()
     _clone "${repos[@]}"
     _create_volumes
     _clone_theme
+    _clone_plugin
 }
 
 clone_private ()

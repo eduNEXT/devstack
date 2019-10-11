@@ -9,9 +9,14 @@ LIST_OF_NAME_PATTERNS=(
 )
 
 NAME_PATTERN_THEME="edunext"
-THEME_REPO="git@bitbucket.org:edunext/edunext-base-theme.git"
+THEME_REPO="git@bitbucket.org:edunext/llpa-base-theme.git"
 BRANCH_REPO_THEME="-b master"
-FOLDER_REPO_THEME="edx-themes"
+FOLDER_REPO_THEME="llpa-base-theme"
+
+NAME_PATTERN_PLUGIN="edunext"
+PLUGIN_REPO="git@bitbucket.org:edunext/llpa_openedx_extensions.git"
+BRANCH_REPO_PLUGIN="-b master"
+FOLDER_REPO_PLUGIN="llpa_openedx_extensions"
 
 # If the branch of the all repositories is not equal define -b for each repository.
 # Example: -b open-release/hawthorn.master https://github.com/edx/course-discovery.git
