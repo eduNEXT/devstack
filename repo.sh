@@ -20,28 +20,52 @@ fi
 if [ -n "${OPENEDX_RELEASE}" ]; then
     OPENEDX_GIT_BRANCH=open-release/${OPENEDX_RELEASE}
 else
-    OPENEDX_GIT_BRANCH=master
+    OPENEDX_GIT_BRANCH=open-release/ironwood.master
 fi
 
+if [ -n "${CAMR_GIT_BRANCH}" ]; then
+     echo "Using ${CAMR_GIT_BRANCH} as branch for camr repositories"
+else
+     CAMR_GIT_BRANCH='camrom/ironwood+campus'
+fi
+
+
 repos=(
-    "https://github.com/edx/course-discovery.git"
-    "https://github.com/edx/credentials.git"
-    "https://github.com/edx/cs_comments_service.git"
-    "https://github.com/edx/ecommerce.git"
-    "https://github.com/edx/edx-e2e-tests.git"
-    "https://github.com/edx/edx-notes-api.git"
-    "https://github.com/edx/edx-platform.git"
-    "https://github.com/edx/xqueue.git"
-    "https://github.com/edx/edx-analytics-pipeline.git"
-    "https://github.com/edx/gradebook.git"
+    "https://github.com/edx/course-discovery"
+    "https://github.com/edx/credentials"
+    "https://github.com/edx/cs_comments_service"
+    "https://github.com/edx/edx-e2e-tests"
+    "https://github.com/edx/edx-notes-api"
+    "https://github.com/edx/xqueue"
+    "https://github.com/edx/edx-analytics-pipeline"
+    "https://github.com/edx/gradebook"
+)
+
+repos_camr=(
+    "https://github.com/edunext/edx-platform"
+    "https://github.com/eduNEXT/ecommerce"
 )
 
 private_repos=(
-    # Needed to run whitelabel tests.
-    "https://github.com/edx/edx-themes.git"
+    "https://github.com/eduNEXT/campusromero-openedx-extensions"
 )
 
-name_pattern=".*/(.*).git"
+
+
+volumes=(
+    "edxapp_studio_assets"
+    "edxapp_lms_assets"
+    "discovery_assets"
+    "mysql_data"
+    "mongo_data"
+    "elasticsearch_data"
+)
+
+theme_repos=(
+    "git@bitbucket.org:edunext/campusromero-theme"
+    )
+
+name_pattern=".*/(.*)"
 
 _checkout ()
 {
@@ -79,7 +103,6 @@ _clone ()
         # Results of the match are saved to an array called $BASH_REMATCH.
         [[ $repo =~ $name_pattern ]]
         name="${BASH_REMATCH[1]}"
-
         # If a directory exists and it is nonempty, assume the repo has been checked out
         # and only make sure it's on the required branch
         if [ -d "$name" -a -n "$(ls -A "$name" 2>/dev/null)" ]; then
@@ -89,9 +112,39 @@ _clone ()
             cd ..
         else
             if [ "${SHALLOW_CLONE}" == "1" ]; then
-                git clone --single-branch -b ${OPENEDX_GIT_BRANCH} -c core.symlinks=true --depth=1 ${repo}
+                git clone  -b ${OPENEDX_GIT_BRANCH} -c core.symlinks=true --depth=1 ${repo}
             else
-                git clone --single-branch -b ${OPENEDX_GIT_BRANCH} -c core.symlinks=true ${repo}
+                git clone  -b ${OPENEDX_GIT_BRANCH} -c core.symlinks=true ${repo}
+            fi
+        fi
+    done
+    cd - &> /dev/null
+}
+
+_clone_camr()
+{
+
+    cd $DEVSTACK_WORKSPACE
+    # for repo in ${repos[*]}
+    repos_to_clone=("$@")
+    for repo in "${repos_to_clone[@]}"
+    do
+        # Use Bash's regex match operator to capture the name of the repo.
+        # Results of the match are saved to an array called $BASH_REMATCH.
+        [[ $repo =~ $name_pattern ]]
+        name="${BASH_REMATCH[1]}"
+        # If a directory exists and it is nonempty, assume the repo has been checked out
+        # and only make sure it's on the required branch
+        if [ -d "$name" -a -n "$(ls -A "$name" 2>/dev/null)" ]; then
+            printf "The [%s] repo is already checked out. Checking for updates.\n" $name
+            cd ${DEVSTACK_WORKSPACE}/${name}
+            _checkout_and_update_branch_camr
+            cd ..
+        else
+            if [ "${SHALLOW_CLONE}" == "1" ]; then
+                git clone  -b ${CAMR_GIT_BRANCH} -c core.symlinks=true --depth=1 ${repo}
+            else
+                git clone  -b ${CAMR_GIT_BRANCH} -c core.symlinks=true ${repo}
             fi
         fi
     done
@@ -108,18 +161,104 @@ _checkout_and_update_branch ()
         git fetch origin ${OPENEDX_GIT_BRANCH}:${OPENEDX_GIT_BRANCH}
         git checkout ${OPENEDX_GIT_BRANCH}
     fi
+    sudo find . -name '*.pyc' -not -path './.git/*' -delete 
+}
+
+_checkout_and_update_branch_camr ()
+{
+    GIT_SYMBOLIC_REF="$(git symbolic-ref HEAD 2>/dev/null)"
+    BRANCH_NAME=${GIT_SYMBOLIC_REF##refs/heads/}
+    if [ "${BRANCH_NAME}" == "${CAMR_GIT_BRANCH}" ]; then
+        git pull origin ${CAMR_GIT_BRANCH}
+    else
+        git fetch origin ${CAMR_GIT_BRANCH}:${CAMR_GIT_BRANCH}
+        git checkout ${CAMR_GIT_BRANCH}
+    fi
     find . -name '*.pyc' -not -path './.git/*' -delete 
+}
+
+_clone_src ()
+{
+    sudo mkdir -p $DEVSTACK_WORKSPACE/src/edxapp
+    u="$USER"
+    sudo chown $u:$u $DEVSTACK_WORKSPACE/src/edxapp
+    cd $DEVSTACK_WORKSPACE/src/edxapp
+    # for repo in ${repos[*]}
+    repos_to_clone=("$@")
+    for repo in "${repos_to_clone[@]}"
+    do
+        # Use Bash's regex match operator to capture the name of the repo.
+        # Results of the match are saved to an array called $BASH_REMATCH.
+        [[ $repo =~ $name_pattern ]]
+        name="${BASH_REMATCH[1]}"
+        echo $name
+        # If a directory exists and it is nonempty, assume the repo has been checked out.
+        if [ -d "$name" -a -n "$(ls -A "$name" 2>/dev/null)" ]; then
+            printf "The [%s] repo is already checked out. Continuing.\n" $name
+        else
+            if [ "${SHALLOW_CLONE}" == "1" ]; then
+                git clone --depth=1 $repo
+            else
+                git clone $repo
+            fi
+        fi
+    done
+    cd - &> /dev/null
+}
+
+_clone_themes ()
+{
+    sudo mkdir -p $DEVSTACK_WORKSPACE/themes
+    u="$USER"
+    sudo chown $u:$u $DEVSTACK_WORKSPACE/themes
+    cd $DEVSTACK_WORKSPACE/themes
+    # for repo in ${repos[*]}
+    repos_to_clone=("$@")
+    for repo in "${repos_to_clone[@]}"
+    do
+        # Use Bash's regex match operator to capture the name of the repo.
+        # Results of the match are saved to an array called $BASH_REMATCH.
+        [[ $repo =~ $name_pattern ]]
+        name="${BASH_REMATCH[1]}"
+        echo $name
+        # If a directory exists and it is nonempty, assume the repo has been checked out.
+        if [ -d "$name" -a -n "$(ls -A "$name" 2>/dev/null)" ]; then
+            printf "The [%s] repo is already checked out. Continuing.\n" $name
+        else
+            if [ "${SHALLOW_CLONE}" == "1" ]; then
+                git clone --depth=1 $repo
+            else
+                git clone $repo
+            fi
+        fi
+    done
+    cd - &> /dev/null
+}
+
+
+_create_volumes ()
+{
+    if [[ ! -d "${DEVSTACK_WORKSPACE}/volumes" ]]; then
+        mkdir "${DEVSTACK_WORKSPACE}/volumes";
+    fi
+    cd "${DEVSTACK_WORKSPACE}/volumes"
+    for vol in "${volumes[@]}"
+    do
+        if [[ ! -d "${DEVSTACK_WORKSPACE}/volumes/${vol}" ]]; then
+            mkdir "${DEVSTACK_WORKSPACE}/volumes/${vol}";
+        fi
+    done
 }
 
 clone ()
 {
     _clone "${repos[@]}"
+    _clone_camr "${repos_camr[@]}"
+    _clone_themes "${theme_repos[@]}"
+    _clone_src "${private_repos[@]}"
+    _create_volumes
 }
 
-clone_private ()
-{
-    _clone "${private_repos[@]}"
-}
 
 reset ()
 {
@@ -160,8 +299,6 @@ if [ "$1" == "checkout" ]; then
     checkout
 elif [ "$1" == "clone" ]; then
     clone
-elif [ "$1" == "whitelabel" ]; then
-    clone_private
 elif [ "$1" == "reset" ]; then
     read -p "This will override any uncommited changes in your local git checkouts. Would you like to proceed? [y/n] " -r
     if [[ $REPLY =~ ^[Yy]$ ]]; then
