@@ -66,14 +66,4 @@ if [ "$1" = "lms" -o -z "$1" ]; then
     provision_ida lms "lms shell" edxapp edx-platform
 fi
 
-if [ "$1" = "discovery" -o -z "$1" ]; then
-    notice Adding demo program to Discovery...
-    provision_ida discovery
-fi
-
-if [ "$1" = "cache" -o -z "$1" ]; then
-    notice Caching programs inside the LMS...
-    docker_exec lms "lms cache_programs" edxapp edx-platform
-fi
-
 reset_color

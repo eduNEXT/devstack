@@ -19,7 +19,7 @@ services:
   chrome:
     container_name: edx.devstack.chrome
     hostname: chrome.devstack.edx
-    image: edxops/chrome:${OPENEDX_RELEASE:-latest}
+    image: edxops/chrome:juniper.master
     shm_size: 2g
     ports:
       - "15900:5900"
@@ -30,7 +30,7 @@ services:
   devpi:
     container_name: edx.devstack.devpi
     hostname: devpi.devstack.edx
-    image: edxops/devpi:${OPENEDX_RELEASE:-latest}
+    image: edxops/devpi:juniper.master
     ports:
       - "3141:3141"
     volumes:
@@ -57,7 +57,7 @@ services:
   firefox:
     container_name: edx.devstack.firefox
     hostname: firefox.devstack.edx
-    image: edxops/firefox:${OPENEDX_RELEASE:-latest}
+    image: edxops/firefox:juniper.master
     shm_size: 2g
     ports:
       - "25900:5900"
@@ -92,7 +92,7 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ""
       MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-    image: mysql:5.6
+    image: mysql:5.7
     # ports:
     #   - "3506:3306"
     volumes:
@@ -138,7 +138,7 @@ services:
       SOCIAL_AUTH_EDX_OIDC_URL_ROOT: http://edx.devstack.lms:18000/oauth2
       ENABLE_DJANGO_TOOLBAR: 1
       DJANGO_WATCHMAN_TIMEOUT: 30
-    image: edxops/credentials:${OPENEDX_RELEASE:-latest}
+    image: edxops/credentials:juniper.master
     ports:
       - "18150:18150"
 
@@ -157,7 +157,7 @@ services:
       TEST_ELASTICSEARCH_URL: "http://edx.devstack.elasticsearch:9200"
       ENABLE_DJANGO_TOOLBAR: 1
       DJANGO_WATCHMAN_TIMEOUT: 30
-    image: edxops/discovery:${OPENEDX_RELEASE:-latest}
+    image: edxops/discovery:juniper.master
     ports:
       - "18381:18381"
     volumes:
@@ -178,7 +178,7 @@ services:
     environment:
       DJANGO_WATCHMAN_TIMEOUT: 30
       ENABLE_DJANGO_TOOLBAR: 1
-    image: edxops/ecommerce:${OPENEDX_RELEASE:-latest}
+    image: edxops/ecommerce:juniper.master
     ports:
       - "18130:18130"
 
@@ -190,7 +190,7 @@ services:
       - devpi
       - elasticsearch
       - mysql
-    image: edxops/notes:${OPENEDX_RELEASE:-latest}
+    image: edxops/notes:juniper.master
     ports:
       - "18120:18120"
     environment:
@@ -212,7 +212,7 @@ services:
       - mongo
       - memcached
       - elasticsearch
-    image: edxops/forum:${OPENEDX_RELEASE:-latest}
+    image: edxops/forum:juniper.master
     ports:
       - "44567:4567"
 
@@ -239,7 +239,7 @@ services:
       EDXAPP_TEST_MONGO_HOST: edx.devstack.mongo
       NO_PYTHON_UNINSTALL: 1
       DJANGO_WATCHMAN_TIMEOUT: 30
-    image: edxops/edxapp:${OPENEDX_RELEASE:-latest}
+    image: ednxops/edxapp:juniper.ist
     ports:
       - "18000:18000"
       - "19876:19876" # JS test debugging
@@ -335,7 +335,7 @@ services:
       EDXAPP_TEST_MONGO_HOST: edx.devstack.mongo
       NO_PYTHON_UNINSTALL: 1
       DJANGO_WATCHMAN_TIMEOUT: 30
-    image: edxops/edxapp:${OPENEDX_RELEASE:-latest}
+    image: ednxops/edxapp:juniper.ist
     ports:
       - "18010:18010"
       - "19877:19877" # JS test debugging
