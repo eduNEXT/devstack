@@ -535,6 +535,31 @@ services:
       - lms
       - studio
 
+  rabbitmq:
+    container_name: edx.devstack.rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: celery
+      RABBITMQ_DEFAULT_PASS: celery
+    image: rabbitmq:3.6.9
+  lms_worker:
+    container_name: edx.devstack.lms_worker
+    command: bash -c 'source /edx/app/edxapp/edxapp_env && while true; do celery worker --queues=edx.lms.core.default --app=lms.celery:APP; sleep 2; done'
+    depends_on:
+      - lms
+      - rabbitmq
+        # Allows attachment to the LMS service using 'docker attach <containerID>'.
+    stdin_open: true
+    tty: true
+    environment:
+      BOK_CHOY_HOSTNAME: edx.devstack.lms
+      BOK_CHOY_LMS_PORT: 18003
+      BOK_CHOY_CMS_PORT: 18031
+      EDXAPP_TEST_MONGO_HOST: edx.devstack.mongo
+      NO_PYTHON_UNINSTALL: 1
+      C_FORCE_ROOT: "true"
+      DJANGO_SETTINGS_MODULE: lms.envs.devstack_docker
+    image: edxops/edxapp:${OPENEDX_RELEASE:-latest}
+
 volumes:
   discovery_assets:
   edxapp_lms_assets:
