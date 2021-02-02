@@ -18,13 +18,14 @@ DEVSTACK_WORKSPACE ?= $(shell pwd)/..
 ifdef OPENEDX_RELEASE
 	COMPOSE_PROJECT_NAME ?= devstack-${OPENEDX_RELEASE}
 else
-	COMPOSE_PROJECT_NAME ?= devstack
+	COMPOSE_PROJECT_NAME ?= devstack-juniper.master
+	OPENEDX_RELEASE ?= juniper.master
 endif
 
 # Name of Docker Compose project.
 # See https://docs.docker.com/compose/reference/envvars/#compose_project_name
 # Defaults to 'devstack'.
-COMPOSE_PROJECT_NAME ?= devstack
+COMPOSE_PROJECT_NAME ?= devstack-juniper.master
 
 # increase Docker Compose HTTP timeout so that devstack provisioning does not fail in unstable networks
 COMPOSE_HTTP_TIMEOUT=180
